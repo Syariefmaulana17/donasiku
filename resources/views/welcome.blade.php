@@ -67,7 +67,7 @@
 
     @livewireStyles
 </head>
-<body class="text-slate-800 font-sans flex flex-col min-h-screen antialiased" style="background-color: {{ $colorBg }}">
+<body class="bg-slate-50 text-slate-800 font-sans flex flex-col min-h-screen antialiased">
     
     <!-- HEADER / STICKY NAVBAR -->
     <nav x-data="{ open: false }" class="sticky top-0 z-50 border-b border-slate-200/80 backdrop-blur-md transition-all" style="background-color: {{ $navbarColor }}f2">

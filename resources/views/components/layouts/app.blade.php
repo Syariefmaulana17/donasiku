@@ -66,7 +66,7 @@
 
         @livewireStyles
     </head>
-    <body class="antialiased font-sans text-slate-800" style="background-color: {{ $colorBg }}">
+    <body class="antialiased font-sans text-slate-800 bg-slate-50">
         
         {{ $slot }}
 

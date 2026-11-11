@@ -190,6 +190,8 @@ class WithdrawalResource extends Resource
                                 Forms\Components\FileUpload::make('transfer_proof')
                                     ->label('Upload Bukti Transfer')
                                     ->image()
+                                    ->disk('public')
+                                    ->visibility('public')
                                     ->directory('bukti-pencairan')
                                     ->visible(fn (Get $get) => $get('status') === 'completed'),
                                     

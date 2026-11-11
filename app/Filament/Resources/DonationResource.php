@@ -61,6 +61,8 @@ class DonationResource extends Resource
                 Forms\Components\FileUpload::make('proof_of_payment')
                     ->label('Bukti Transfer')
                     ->image()
+                    ->disk('public')
+                    ->visibility('public')
                     ->directory('bukti-transfer'),
             ]);
     }
