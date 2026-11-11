@@ -52,9 +52,10 @@ class DonationResource extends Resource
                 Forms\Components\Select::make('status')
                     ->label('Status Pembayaran')
                     ->options([
-                        'pending' => 'Pending (Menunggu)',
-                        'success' => 'Sukses',
-                        'failed' => 'Gagal',
+                        'pending' => 'Pending (Belum Upload Bukti)',
+                        'pending_verification' => 'Menunggu Verifikasi Bukti',
+                        'success' => 'Sukses (Terverifikasi)',
+                        'failed' => 'Gagal / Ditolak',
                     ])
                     ->required()
                     ->default('pending'),
@@ -151,8 +152,16 @@ class DonationResource extends Resource
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->badge()
+                    ->formatStateUsing(fn (string $state): string => match ($state) {
+                        'pending' => 'Belum Upload',
+                        'pending_verification' => 'Perlu Verifikasi Bukti',
+                        'success' => 'Sukses',
+                        'failed' => 'Gagal',
+                        default => $state,
+                    })
                     ->color(fn (string $state): string => match ($state) {
-                        'pending' => 'warning',
+                        'pending' => 'gray',
+                        'pending_verification' => 'warning',
                         'success' => 'success',
                         'failed' => 'danger',
                         default => 'gray',
@@ -160,7 +169,9 @@ class DonationResource extends Resource
                     ->toggleable(),
                 Tables\Columns\ImageColumn::make('proof_of_payment')
                     ->label('Bukti')
+                    ->disk('public')
                     ->square()
+                    ->url(fn (Donation $record): ?string => $record->proof_of_payment ? Storage::url($record->proof_of_payment) : null, true)
                     ->toggleable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Tanggal Transaksi')
@@ -171,8 +182,25 @@ class DonationResource extends Resource
             ->filters([
                 //
             ])
-            // Kita gabungkan Tombol WA yang dinamis dengan tombol bawaan (Invoice, Edit, Hapus)
-            ->actions(array_merge($waActions, [
+            // Kita gabungkan Tombol WA yang dinamis dengan tombol Setujui Cepat & tombol bawaan (Invoice, Edit, Hapus)
+            ->actions(array_merge([
+                Tables\Actions\Action::make('verifikasi_sukses')
+                    ->label('Setujui')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->button()
+                    ->visible(fn (Donation $record): bool => $record->status !== 'success')
+                    ->requiresConfirmation()
+                    ->modalHeading('Setujui & Verifikasi Donasi Ini?')
+                    ->modalDescription('Status donasi akan diubah menjadi Sukses dan dana terkumpul pada program terkait akan otomatis bertambah.')
+                    ->action(function (Donation $record): void {
+                        $record->update(['status' => 'success']);
+                        \Filament\Notifications\Notification::make()
+                            ->success()
+                            ->title('Donasi berhasil diverifikasi!')
+                            ->send();
+                    }),
+            ], $waActions, [
                 Tables\Actions\Action::make('cetak_invoice')
                     ->label('Invoice')
                     ->icon('heroicon-o-printer')
@@ -189,7 +217,8 @@ class DonationResource extends Resource
                         }
                     }),
             ]))
-            ->paginated(false);
+            ->defaultSort('created_at', 'desc')
+            ->paginated([10, 25, 50, 100]);
     }
 
     public static function getRelations(): array

@@ -1,4 +1,9 @@
 @php
+    $homeSetting = \App\Models\HomepageSetting::first();
+    $configuredBanks = ($homeSetting && !empty($homeSetting->footer_banks) && is_array($homeSetting->footer_banks))
+        ? $homeSetting->footer_banks
+        : [];
+
     $nominalChoices = [10000, 20000, 50000, 100000];
     if (!empty($campaign->nominal_choices) && is_array($campaign->nominal_choices)) {
         $extracted = collect($campaign->nominal_choices)->pluck('nominal')->filter()->map(fn($v) => (int)$v)->values()->all();
@@ -106,50 +111,69 @@
                     <h3 class="font-extrabold text-slate-900 text-sm md:text-base mb-4">3. Pilih Metode Pembayaran</h3>
                     
                     <div class="space-y-2.5">
-                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pembayaran Instan (E-Wallet & QRIS)</div>
-                        <label class="flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer hover:bg-blue-50/50 transition {{ $payment_method == 'qris' ? 'border-brand-primary bg-blue-50/60 ring-1 ring-brand-primary' : 'border-slate-200' }}">
-                            <div class="flex items-center gap-3">
-                                <div class="w-14 h-9 bg-blue-100 rounded-xl text-xs font-extrabold text-blue-700 flex items-center justify-center">QRIS</div>
-                                <div>
-                                    <span class="text-xs md:text-sm font-bold text-slate-800 block">QRIS Semua E-Wallet & Mobile Banking</span>
-                                    <span class="text-[11px] text-slate-400">GoPay, OVO, DANA, ShopeePay, LinkAja</span>
+                        @if(count($configuredBanks) > 0)
+                            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1 block">Transfer Rekening Resmi</div>
+                            @foreach($configuredBanks as $bank)
+                                @php
+                                    $bankMethodValue = $bank['bank_name'] ?? ('Bank ' . ($loop->index + 1));
+                                @endphp
+                                <label class="flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer hover:bg-blue-50/50 transition {{ $payment_method === $bankMethodValue ? 'border-brand-primary bg-blue-50/60 ring-1 ring-brand-primary' : 'border-slate-200' }}">
+                                    <div class="flex items-center gap-3.5 min-w-0">
+                                        @if(!empty($bank['logo']))
+                                            <div class="w-14 h-10 bg-white border border-slate-100 rounded-xl p-1 flex items-center justify-center shrink-0">
+                                                <img src="{{ Storage::url($bank['logo']) }}" class="max-h-full max-w-full object-contain" alt="{{ $bankMethodValue }}">
+                                            </div>
+                                        @else
+                                            <div class="w-14 h-10 bg-blue-900/10 rounded-xl text-xs font-extrabold text-blue-900 flex items-center justify-center shrink-0 uppercase px-1 text-center truncate">
+                                                {{ $bankMethodValue }}
+                                            </div>
+                                        @endif
+                                        <div class="min-w-0">
+                                            <span class="text-xs md:text-sm font-bold text-slate-800 block truncate">Transfer {{ $bankMethodValue }}</span>
+                                            <span class="text-[11px] text-slate-500 block truncate">{{ $bank['account_number'] ?? '' }} — A.n. {{ $bank['account_name'] ?? '' }}</span>
+                                        </div>
+                                    </div>
+                                    <input type="radio" wire:model.live="payment_method" value="{{ $bankMethodValue }}" class="w-4 h-4 text-brand-primary focus:ring-brand-primary shrink-0">
+                                </label>
+                            @endforeach
+                        @else
+                            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Pembayaran Instan (E-Wallet & QRIS)</div>
+                            <label class="flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer hover:bg-blue-50/50 transition {{ $payment_method == 'qris' ? 'border-brand-primary bg-blue-50/60 ring-1 ring-brand-primary' : 'border-slate-200' }}">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-14 h-9 bg-blue-100 rounded-xl text-xs font-extrabold text-blue-700 flex items-center justify-center">QRIS</div>
+                                    <div>
+                                        <span class="text-xs md:text-sm font-bold text-slate-800 block">QRIS Semua E-Wallet & Mobile Banking</span>
+                                        <span class="text-[11px] text-slate-400">GoPay, OVO, DANA, ShopeePay, LinkAja</span>
+                                    </div>
                                 </div>
-                            </div>
-                            <input type="radio" wire:model.live="payment_method" value="qris" class="w-4 h-4 text-brand-primary focus:ring-brand-primary">
-                        </label>
+                                <input type="radio" wire:model.live="payment_method" value="qris" class="w-4 h-4 text-brand-primary focus:ring-brand-primary">
+                            </label>
 
-                        <label class="flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer hover:bg-blue-50/50 transition {{ $payment_method == 'shopeepay' ? 'border-brand-primary bg-blue-50/60 ring-1 ring-brand-primary' : 'border-slate-200' }}">
-                            <div class="flex items-center gap-3">
-                                <div class="w-14 h-9 bg-[#EE4D2D]/10 rounded-xl text-xs font-extrabold text-[#EE4D2D] flex items-center justify-center">Shopee</div>
-                                <span class="text-xs md:text-sm font-bold text-slate-800">ShopeePay</span>
-                            </div>
-                            <input type="radio" wire:model.live="payment_method" value="shopeepay" class="w-4 h-4 text-brand-primary focus:ring-brand-primary">
-                        </label>
+                            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider pt-3 mb-1 block">Transfer Bank / Virtual Account</div>
+                            <label class="flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer hover:bg-blue-50/50 transition {{ $payment_method == 'va_bca' ? 'border-brand-primary bg-blue-50/60 ring-1 ring-brand-primary' : 'border-slate-200' }}">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-14 h-9 bg-blue-900/10 rounded-xl text-xs font-extrabold text-blue-900 flex items-center justify-center">BCA</div>
+                                    <span class="text-xs md:text-sm font-bold text-slate-800">Transfer / VA BCA</span>
+                                </div>
+                                <input type="radio" wire:model.live="payment_method" value="va_bca" class="w-4 h-4 text-brand-primary focus:ring-brand-primary">
+                            </label>
 
-                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider pt-3 mb-1 block">Transfer Bank / Virtual Account</div>
-                        <label class="flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer hover:bg-blue-50/50 transition {{ $payment_method == 'va_bca' ? 'border-brand-primary bg-blue-50/60 ring-1 ring-brand-primary' : 'border-slate-200' }}">
-                            <div class="flex items-center gap-3">
-                                <div class="w-14 h-9 bg-blue-900/10 rounded-xl text-xs font-extrabold text-blue-900 flex items-center justify-center">BCA</div>
-                                <span class="text-xs md:text-sm font-bold text-slate-800">BCA Virtual Account</span>
-                            </div>
-                            <input type="radio" wire:model.live="payment_method" value="va_bca" class="w-4 h-4 text-brand-primary focus:ring-brand-primary">
-                        </label>
+                            <label class="flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer hover:bg-blue-50/50 transition {{ $payment_method == 'va_mandiri' ? 'border-brand-primary bg-blue-50/60 ring-1 ring-brand-primary' : 'border-slate-200' }}">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-14 h-9 bg-amber-500/10 rounded-xl text-xs font-extrabold text-amber-600 flex items-center justify-center">MANDIRI</div>
+                                    <span class="text-xs md:text-sm font-bold text-slate-800">Transfer / VA Mandiri</span>
+                                </div>
+                                <input type="radio" wire:model.live="payment_method" value="va_mandiri" class="w-4 h-4 text-brand-primary focus:ring-brand-primary">
+                            </label>
 
-                        <label class="flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer hover:bg-blue-50/50 transition {{ $payment_method == 'va_mandiri' ? 'border-brand-primary bg-blue-50/60 ring-1 ring-brand-primary' : 'border-slate-200' }}">
-                            <div class="flex items-center gap-3">
-                                <div class="w-14 h-9 bg-amber-500/10 rounded-xl text-xs font-extrabold text-amber-600 flex items-center justify-center">MANDIRI</div>
-                                <span class="text-xs md:text-sm font-bold text-slate-800">Mandiri Virtual Account</span>
-                            </div>
-                            <input type="radio" wire:model.live="payment_method" value="va_mandiri" class="w-4 h-4 text-brand-primary focus:ring-brand-primary">
-                        </label>
-
-                        <label class="flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer hover:bg-blue-50/50 transition {{ $payment_method == 'va_bni' ? 'border-brand-primary bg-blue-50/60 ring-1 ring-brand-primary' : 'border-slate-200' }}">
-                            <div class="flex items-center gap-3">
-                                <div class="w-14 h-9 bg-orange-600/10 rounded-xl text-xs font-extrabold text-orange-600 flex items-center justify-center">BNI</div>
-                                <span class="text-xs md:text-sm font-bold text-slate-800">BNI Virtual Account</span>
-                            </div>
-                            <input type="radio" wire:model.live="payment_method" value="va_bni" class="w-4 h-4 text-brand-primary focus:ring-brand-primary">
-                        </label>
+                            <label class="flex items-center justify-between p-3.5 border rounded-2xl cursor-pointer hover:bg-blue-50/50 transition {{ $payment_method == 'va_bni' ? 'border-brand-primary bg-blue-50/60 ring-1 ring-brand-primary' : 'border-slate-200' }}">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-14 h-9 bg-orange-600/10 rounded-xl text-xs font-extrabold text-orange-600 flex items-center justify-center">BNI</div>
+                                    <span class="text-xs md:text-sm font-bold text-slate-800">Transfer / VA BNI</span>
+                                </div>
+                                <input type="radio" wire:model.live="payment_method" value="va_bni" class="w-4 h-4 text-brand-primary focus:ring-brand-primary">
+                            </label>
+                        @endif
                     </div>
                     @error('payment_method') <span class="text-rose-600 text-xs mt-2 block font-semibold">Pilih metode pembayaran terlebih dahulu.</span> @enderror
                 </div>

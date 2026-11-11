@@ -2,18 +2,19 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
-use Livewire\Attributes\Url;
-use Livewire\WithFileUploads; // Wajib dipanggil untuk fitur upload
+use App\Models\Donation;
+use App\Models\HomepageSetting;
 use Carbon\Carbon;
-use App\Models\Donation; // Memanggil tabel database Donasi
+use Livewire\Attributes\Url;
+use Livewire\Component;
+use Livewire\WithFileUploads;
 
 class PaymentInstruction extends Component
 {
-    use WithFileUploads; // Mengaktifkan mesin upload file
+    use WithFileUploads;
 
     #[Url]
-    public $id; // Menangkap ID Donasi dari URL
+    public $id;
 
     #[Url]
     public $amount;
@@ -24,70 +25,123 @@ class PaymentInstruction extends Component
     public $donation;
     public $deadline_time;
     public $deadline_formatted;
-    public $va_number = '1900880015000000'; 
-    public $proof_of_payment; // Variabel untuk menyimpan gambar
-    public $is_success = false; // Penanda jika upload berhasil
+    public $bank_name = 'Transfer Bank';
+    public $bank_logo = null;
+    public $va_number = '-';
+    public $account_name = 'Yayasan DonasiKu';
+    public $proof_of_payment;
+    public $is_success = false;
 
-    public function mount()
+    public function mount($id = null, $method = null)
     {
-        // Jika tidak ada ID donasi atau metode, tendang ke beranda
-        if (!$this->id || !$this->method) {
+        if ($id !== null) {
+            $this->id = $id;
+        }
+        if ($method !== null) {
+            $this->method = $method;
+        }
+
+        if (! $this->id) {
             return redirect('/');
         }
 
-        // Cari data donasi berdasarkan ID
-        $this->donation = Donation::find($this->id);
-        if (!$this->donation) {
+        $this->donation = Donation::with('campaign')->find($this->id);
+        if (! $this->donation) {
             return redirect('/');
         }
 
-        // Kita samakan nominalnya dengan yang ada di database agar lebih aman
+        if ($this->donation->status === 'success') {
+            return redirect()->route('payment.success', $this->donation->id);
+        }
+
+        if (empty($this->method)) {
+            $this->method = $this->donation->payment_method ?: 'Transfer Bank';
+        }
+
         $this->amount = $this->donation->amount;
 
-        // Simulasi nomor rekening dinamis (Opsional: agar terlihat lebih nyata)
-        if (str_contains($this->method, 'bca')) {
-            $this->va_number = '88000' . $this->donation->id;
-        } elseif (str_contains($this->method, 'mandiri')) {
-            $this->va_number = '89022' . $this->donation->id;
+        // Jika sebelumnya sudah pernah mengunggah bukti transfer
+        if (! empty($this->donation->proof_of_payment) || $this->donation->status === 'pending_verification') {
+            $this->is_success = true;
         }
 
-        // Simulasi batas waktu pembayaran (+15 menit dari sekarang)
-        $deadline = Carbon::now()->addMinutes(15);
-        $this->deadline_time = $deadline->timestamp * 1000; 
+        // Ambil daftar rekening resmi dari pengaturan Admin (ManageFooter)
+        $homeSetting = HomepageSetting::first();
+        $siteName = $homeSetting->site_name ?? 'DonasiKu';
+        $this->account_name = $siteName;
+        $this->bank_name = strtoupper(str_replace('va_', '', (string) $this->method));
+
+        $matchedBank = null;
+        $banks = ($homeSetting && ! empty($homeSetting->footer_banks) && is_array($homeSetting->footer_banks))
+            ? $homeSetting->footer_banks
+            : [];
+
+        $searchKey = strtolower(trim(str_replace('va_', '', (string) $this->method)));
+
+        foreach ($banks as $bank) {
+            $bankNameLower = strtolower(trim((string) ($bank['bank_name'] ?? '')));
+            if ($bankNameLower !== '' && ($bankNameLower === $searchKey || str_contains($bankNameLower, $searchKey) || str_contains($searchKey, $bankNameLower))) {
+                $matchedBank = $bank;
+                break;
+            }
+        }
+
+        if (! $matchedBank && count($banks) > 0) {
+            $matchedBank = $banks[0];
+        }
+
+        if ($matchedBank) {
+            $this->bank_name = $matchedBank['bank_name'] ?? $this->bank_name;
+            $this->bank_logo = $matchedBank['logo'] ?? null;
+            $this->va_number = $matchedBank['account_number'] ?? '-';
+            $this->account_name = $matchedBank['account_name'] ?? $siteName;
+        } else {
+            // Fallback jika Admin belum mengisi rekening di menu Footer
+            if (str_contains($searchKey, 'bca')) {
+                $this->va_number = '88000' . str_pad((string) $this->donation->id, 6, '0', STR_PAD_LEFT);
+            } elseif (str_contains($searchKey, 'mandiri')) {
+                $this->va_number = '89022' . str_pad((string) $this->donation->id, 6, '0', STR_PAD_LEFT);
+            } else {
+                $this->va_number = '190088' . str_pad((string) $this->donation->id, 6, '0', STR_PAD_LEFT);
+            }
+        }
+
+        $deadline = ($this->donation->created_at ?? Carbon::now())->copy()->addHours(24);
+        if ($deadline->isPast()) {
+            $deadline = Carbon::now()->addHours(24);
+        }
+        $this->deadline_time = $deadline->timestamp * 1000;
         $this->deadline_formatted = $deadline->translatedFormat('l, d F Y H:i') . ' WIB';
     }
 
-    // Fungsi ini akan berjalan saat tombol "Konfirmasi Pembayaran" diklik
-    public function submitProof()
+    public function submitProof(): void
     {
-        // 1. Pastikan gambar sudah dipilih dan ukurannya tidak lebih dari 2MB
         $this->validate([
-            'proof_of_payment' => 'required|image|max:2048', 
+            'proof_of_payment' => 'required|image|max:4096',
         ], [
             'proof_of_payment.required' => 'Harap pilih foto bukti transfer terlebih dahulu.',
-            'proof_of_payment.image' => 'File harus berupa gambar (JPG, PNG).',
-            'proof_of_payment.max' => 'Ukuran gambar maksimal 2 MB.'
+            'proof_of_payment.image' => 'File harus berupa gambar (JPG, PNG, WEBP).',
+            'proof_of_payment.max' => 'Ukuran gambar maksimal 4 MB.',
         ]);
 
-        // 2. Simpan gambar ke folder storage Hostinger Anda
         $path = $this->proof_of_payment->store('bukti-transfer', 'public');
 
-        // 3. Update data donasi di database (masukkan foto & ubah status)
         $this->donation->update([
             'proof_of_payment' => $path,
-            'status' => 'pending_verification' // Status berubah menunggu dicek admin
+            'status' => 'pending_verification',
         ]);
 
-        // 4. Ubah penanda sukses menjadi true untuk memunculkan pesan sukses di tampilan
         $this->is_success = true;
     }
-    
+
     public function checkPaymentStatus()
     {
-        // Segarkan data donasi dari database
+        if (! $this->donation) {
+            return;
+        }
+
         $this->donation->refresh();
 
-        // Jika Admin mengubah statusnya jadi success, langsung lempar!
         if ($this->donation->status === 'success') {
             return redirect()->route('payment.success', $this->donation->id);
         }
@@ -95,6 +149,8 @@ class PaymentInstruction extends Component
 
     public function render()
     {
-        return view('livewire.payment-instruction')->layout('components.layouts.app');
+        return view('livewire.payment-instruction')->layout('components.layouts.app', [
+            'title' => 'Instruksi Pembayaran Donasi',
+        ]);
     }
 }

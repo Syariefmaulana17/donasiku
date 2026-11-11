@@ -40,10 +40,10 @@ class ManageFooter extends Page implements HasForms
             ])->columns(2),
 
             Section::make('Pengaturan Rekening Donasi')->schema([
-                Repeater::make('footer_banks')->label('Daftar Rekening Bank')
+                Repeater::make('footer_banks')->label('Daftar Rekening Bank (Otomatis Tampil di Checkout & Footer)')
                     ->schema([
-                        FileUpload::make('logo')->label('Logo Bank')->image()->disk('public')->directory('web-assets')->visibility('public')->required(),
-                        TextInput::make('bank_name')->label('Nama Bank (Contoh: BSI)')->required(),
+                        FileUpload::make('logo')->label('Logo Bank (Opsional)')->image()->disk('public')->directory('web-assets')->visibility('public'),
+                        TextInput::make('bank_name')->label('Nama Bank (Contoh: BSI / BCA / Mandiri)')->required(),
                         TextInput::make('account_number')->label('Nomor Rekening')->required(),
                         TextInput::make('account_name')->label('Atas Nama')->required(),
                     ])->columns(4)
