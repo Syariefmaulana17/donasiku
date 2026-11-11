@@ -44,7 +44,7 @@ class ArticleResource extends Resource
                         Select::make('article_category_id')->label('Kategori')
                             ->relationship('category', 'name')->searchable()->required(),
                             
-                        FileUpload::make('cover_image')->label('Gambar Cover')->image()->directory('articles'),
+                        FileUpload::make('cover_image')->label('Gambar Cover')->image()->disk('public')->directory('articles')->visibility('public'),
                         
                         RichEditor::make('content')->label('Isi Artikel')->required()->live(debounce: 1000),
                     ]),

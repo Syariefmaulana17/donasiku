@@ -12,7 +12,7 @@ class FrontController extends Controller
 {
     public function index()
     {
-        $campaigns = Campaign::where('is_active', true)->latest()->get();
+        $campaigns = Campaign::where('status', 'active')->latest()->get();
         return view('welcome', compact('campaigns'));
     }
 

@@ -37,17 +37,14 @@ class Campaign extends Model
         'is_min_donation_enabled',
         'min_donation_amount',
     ];
-    protected $casts = [
-        'nominal_choices' => 'array',
-        'allow_manual_nominal' => 'boolean',
-    ];
-
     /**
      * Konversi tipe data otomatis (Casting)
      */
     protected function casts(): array
     {
         return [
+            'nominal_choices' => 'array',
+            'allow_manual_nominal' => 'boolean',
             'packages' => 'array',
             'is_package_enabled' => 'boolean',
             'is_min_donation_enabled' => 'boolean',

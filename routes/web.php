@@ -30,13 +30,35 @@ Route::get('/payment/success/{id}', function($id) {
     
     // Ambil 3 program lain secara acak untuk upselling
     $otherCampaigns = \App\Models\Campaign::where('id', '!=', $donation->campaign_id)
-                        ->where('is_active', true)
+                        ->where('status', 'active')
                         ->inRandomOrder()
                         ->take(3)
                         ->get();
                         
     return view('payment-success', compact('donation', 'otherCampaigns'));
 })->name('payment.success');
+
+// Halaman Detail Artikel / Berita
+Route::get('/artikel/{slug}', function ($slug) {
+    $article = \App\Models\Article::with('category')
+        ->where('slug', $slug)
+        ->where('is_published', true)
+        ->firstOrFail();
+
+    $otherArticles = \App\Models\Article::with('category')
+        ->where('id', '!=', $article->id)
+        ->where('is_published', true)
+        ->latest()
+        ->take(3)
+        ->get();
+
+    $recommendedCampaigns = \App\Models\Campaign::where('status', 'active')
+        ->inRandomOrder()
+        ->take(3)
+        ->get();
+
+    return view('article-detail', compact('article', 'otherArticles', 'recommendedCampaigns'));
+})->name('article.detail');
 
 // Halaman Cetak/Download Kwitansi
 Route::get('/payment/receipt/{id}', function($id) {
@@ -54,3 +76,25 @@ Route::get('/halaman/{slug}', function ($slug) {
 
     return view('custom-page', compact('page', 'navbarColor'));
 });
+
+// Fallback Pintar untuk File Storage (Menangani Symlink Hostinger & File yang Terlanjur Masuk ke Folder Private)
+Route::get('/storage/{path}', function (string $path) {
+    $publicPath = storage_path('app/public/' . $path);
+    if (file_exists($publicPath)) {
+        return response()->file($publicPath);
+    }
+
+    $privatePath = storage_path('app/private/' . $path);
+    if (file_exists($privatePath)) {
+        // Pindahkan/salin otomatis ke folder public agar ke depannya langsung terbaca sebagai public
+        $targetDir = dirname($publicPath);
+        if (! is_dir($targetDir)) {
+            mkdir($targetDir, 0755, true);
+        }
+        @copy($privatePath, $publicPath);
+
+        return response()->file($publicPath);
+    }
+
+    abort(404);
+})->where('path', '.*');

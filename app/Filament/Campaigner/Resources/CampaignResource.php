@@ -87,7 +87,9 @@ class CampaignResource extends Resource
                     FileUpload::make('cover_image')
                         ->label('Gambar Cover')
                         ->image()
+                        ->disk('public')
                         ->directory('campaign-covers')
+                        ->visibility('public')
                         ->required()
                         ->columnSpanFull(),
 

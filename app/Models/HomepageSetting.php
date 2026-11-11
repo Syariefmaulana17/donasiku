@@ -13,7 +13,8 @@ class HomepageSetting extends Model
         'logo', 'navbar_color', 'navbar_menu', 
         'hero_banners', 'category_buttons', 'dynamic_sections',
         'footer_logo', 'footer_desc', 'footer_bg_color', 'footer_banks',
-        'custom_pages', 'footer_sections', // <-- Tambahan baru
+        'footer_phone', 'footer_email', 'footer_schedule', 'footer_address', 'footer_gmaps',
+        'custom_pages', 'footer_sections',
         'site_name', 'brand_logo', 'favicon', 'color_primary', 'color_secondary', 'color_background', 'color_button', 'color_accent'
     ];
 

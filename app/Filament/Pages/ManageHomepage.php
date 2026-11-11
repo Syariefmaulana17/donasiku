@@ -39,12 +39,12 @@ class ManageHomepage extends Page implements HasForms
         return [
             Block::make('banner_slider')->label('Banner Slider (Bisa Geser)')->icon('heroicon-m-photo')->schema([
                 Repeater::make('slides')->schema([
-                    FileUpload::make('image')->label('Upload Banner')->image()->directory('web-assets')->required(),
+                    FileUpload::make('image')->label('Upload Banner')->image()->disk('public')->directory('web-assets')->visibility('public')->required(),
                     TextInput::make('link_url')->label('Link Tujuan (Saat Diklik)')->url(),
                 ])->columns(2)
             ]),
             Block::make('banner_statis')->label('Banner Statis (1 Gambar)')->icon('heroicon-m-stop')->schema([
-                FileUpload::make('image')->label('Upload Banner')->image()->directory('web-assets')->required(),
+                FileUpload::make('image')->label('Upload Banner')->image()->disk('public')->directory('web-assets')->visibility('public')->required(),
                 TextInput::make('link_url')->label('Link Tujuan (Saat Diklik)')->url(),
             ]),
             Block::make('category_buttons')->label('Tombol Kategori')->icon('heroicon-m-squares-2x2')->schema([

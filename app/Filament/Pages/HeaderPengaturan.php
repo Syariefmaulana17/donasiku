@@ -47,7 +47,9 @@ class HeaderPengaturan extends Page implements HasForms
                 FileUpload::make('logo')
                     ->label('Logo Website')
                     ->image()
-                    ->directory('web-assets'),
+                    ->disk('public')
+                    ->directory('web-assets')
+                    ->visibility('public'),
                 ColorPicker::make('navbar_color')
                     ->label('Warna Background Navbar')
                     ->default('#ffffff')
@@ -67,5 +69,6 @@ class HeaderPengaturan extends Page implements HasForms
         $setting = HomepageSetting::first() ?? HomepageSetting::create();
         $setting->update($this->form->getState());
         Notification::make()->success()->title('Header Berhasil Disimpan!')->send();
+        $this->js('window.location.reload()');
     }
 }

@@ -32,10 +32,11 @@ class AdminPanelProvider extends PanelProvider
             } catch (\Exception $e) {}
         }
 
-        // 2. Siapkan variabel Identitas
+        // 2. Siapkan variabel Identitas (Fallback otomatis antara brand_logo dan logo header)
         $brandName = $setting->site_name ?? 'DonasiKu';
-        $brandLogo = !empty($setting->brand_logo) ? asset('storage/' . $setting->brand_logo) : null;
-        $favicon = !empty($setting->favicon) ? asset('storage/' . $setting->favicon) : null;
+        $logoPath = !empty($setting->brand_logo) ? $setting->brand_logo : ($setting->logo ?? null);
+        $brandLogo = !empty($logoPath) ? '/storage/' . ltrim($logoPath, '/') : null;
+        $favicon = !empty($setting->favicon) ? '/storage/' . ltrim($setting->favicon, '/') : null;
         
         // 3. Siapkan Warna (Mengambil dari database)
         $primaryColorHex = $setting->color_primary ?? '#10b981'; // Hijau sebagai default jika kosong

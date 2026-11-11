@@ -34,7 +34,7 @@ class ManageFooter extends Page implements HasForms
     public function form(Form $form): Form {
         return $form->schema([
             Section::make('Identitas Footer')->schema([
-                FileUpload::make('footer_logo')->label('Logo Footer')->image()->directory('web-assets'),
+                FileUpload::make('footer_logo')->label('Logo Footer')->image()->disk('public')->directory('web-assets')->visibility('public'),
                 ColorPicker::make('footer_bg_color')->label('Warna Latar Belakang')->default('#fff7ed'),
                 Textarea::make('footer_desc')->label('Teks Deskripsi / Visi Misi')->rows(3)->columnSpanFull(),
             ])->columns(2),
@@ -42,7 +42,7 @@ class ManageFooter extends Page implements HasForms
             Section::make('Pengaturan Rekening Donasi')->schema([
                 Repeater::make('footer_banks')->label('Daftar Rekening Bank')
                     ->schema([
-                        FileUpload::make('logo')->label('Logo Bank')->image()->directory('web-assets')->required(),
+                        FileUpload::make('logo')->label('Logo Bank')->image()->disk('public')->directory('web-assets')->visibility('public')->required(),
                         TextInput::make('bank_name')->label('Nama Bank (Contoh: BSI)')->required(),
                         TextInput::make('account_number')->label('Nomor Rekening')->required(),
                         TextInput::make('account_name')->label('Atas Nama')->required(),

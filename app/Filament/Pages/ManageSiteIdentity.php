@@ -42,11 +42,15 @@ class ManageSiteIdentity extends Page implements HasForms
                     FileUpload::make('brand_logo')
                         ->label('Logo Dasbor (Menggantikan Teks Pojok Kiri Atas)')
                         ->image()
-                        ->directory('site-identity'),
+                        ->disk('public')
+                        ->directory('site-identity')
+                        ->visibility('public'),
                     FileUpload::make('favicon')
                         ->label('Favicon (Ikon Kecil di Tab Browser)')
                         ->image()
-                        ->directory('site-identity'),
+                        ->disk('public')
+                        ->directory('site-identity')
+                        ->visibility('public'),
                 ])->columnSpan(1),
 
                 Section::make('Palet Warna (Tone)')->schema([
