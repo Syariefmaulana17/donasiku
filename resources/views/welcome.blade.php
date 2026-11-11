@@ -288,44 +288,6 @@
                 <livewire:campaign-search title="Program Kebaikan Pilihan" subtitle="Salurkan donasi terbaik Anda untuk membantu sesama." category="semua" />
             </div>
         @endif
-
-        <!-- BAR STATISTIK DAMPAK KEBAIKAN (TRUST SIGNAL) -->
-        <section class="max-w-7xl mx-auto px-4 md:px-8 mt-12 md:mt-16">
-            <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 rounded-3xl p-6 md:p-10 text-white shadow-xl relative overflow-hidden">
-                <div class="absolute -right-10 -top-10 w-52 h-52 rounded-full bg-brand-primary/20 blur-3xl pointer-events-none"></div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 relative z-10 divide-y md:divide-y-0 md:divide-x divide-slate-700/70">
-                    <div class="flex items-center gap-4 pt-2 md:pt-0">
-                        <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white/10 flex items-center justify-center text-emerald-400 shrink-0">
-                            <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        </div>
-                        <div>
-                            <p class="text-xs md:text-sm text-slate-300 font-medium">Total Dana Kebaikan Terkumpul</p>
-                            <p class="text-xl md:text-2xl font-extrabold tracking-tight text-white mt-0.5">Rp {{ number_format($totalTerkumpul, 0, ',', '.') }}</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-4 pt-4 md:pt-0 md:pl-8">
-                        <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white/10 flex items-center justify-center text-sky-400 shrink-0">
-                            <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-                        </div>
-                        <div>
-                            <p class="text-xs md:text-sm text-slate-300 font-medium">Transaksi Kebaikan</p>
-                            <p class="text-xl md:text-2xl font-extrabold tracking-tight text-white mt-0.5">{{ number_format($totalOrangBaik, 0, ',', '.') }} Donasi</p>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-4 pt-4 md:pt-0 md:pl-8">
-                        <div class="w-12 h-12 md:w-14 md:h-14 rounded-2xl bg-white/10 flex items-center justify-center text-amber-400 shrink-0">
-                            <svg class="w-6 h-6 md:w-7 md:h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                        </div>
-                        <div>
-                            <p class="text-xs md:text-sm text-slate-300 font-medium">Program Kebaikan Aktif</p>
-                            <p class="text-xl md:text-2xl font-extrabold tracking-tight text-white mt-0.5">{{ number_format($totalProgramAktif, 0, ',', '.') }} Program</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
     </main>
 
     <!-- FOOTER PROFESIONAL -->
