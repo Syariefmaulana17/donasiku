@@ -29,7 +29,12 @@ class WebPageResource extends Resource
             Section::make('Informasi Halaman')->schema([
                 TextInput::make('title')->label('Judul Halaman')->required()
                     ->live(onBlur: true)->afterStateUpdated(fn ($set, $state) => $set('slug', Str::slug($state ?? ''))),
-                TextInput::make('slug')->label('Link URL')->required()->unique(ignoreRecord: true),
+                TextInput::make('slug')
+                    ->label('Link URL (Slug)')
+                    ->prefix(url('/') . '/')
+                    ->helperText('Mudah ditebak! Halaman ini bisa diakses langsung melalui ' . url('/nama-slug') . ' maupun ' . url('/halaman/nama-slug'))
+                    ->required()
+                    ->unique(ignoreRecord: true),
                 Toggle::make('is_active')->label('Tayangkan Halaman?')->default(true),
             ])->columns(2),
 
@@ -47,7 +52,7 @@ class WebPageResource extends Resource
         return $table->columns([
             Tables\Columns\TextColumn::make('title')->label('Judul')->searchable(),
             Tables\Columns\TextColumn::make('slug')->label('Link URL')
-                ->formatStateUsing(fn ($state) => url('/halaman/' . $state))
+                ->formatStateUsing(fn ($state) => url('/' . ltrim((string) $state, '/')))
                 ->copyable()->copyMessage('Link disalin!')->icon('heroicon-o-link'),
             // Simulasi analitik (karena belum ada tabel tracking)
             Tables\Columns\TextColumn::make('views')->label('Engagement (Views)')

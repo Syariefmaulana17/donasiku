@@ -27,4 +27,43 @@ class HomepageSetting extends Model
         'footer_sections' => 'array', // <-- Tambahan baru
         'footer_banks' => 'array',
     ];
+
+    /**
+     * Normalisasi URL menu navbar agar selalu valid dari halaman mana pun
+     * dan tidak pernah terjebak menjadi relative URL seperti /halaman/donasi.dqws.org.
+     */
+    public static function normalizeNavUrl(?string $url, ?string $label = null): string
+    {
+        $raw = trim((string) $url);
+        $cleanLabel = strtolower(trim((string) $label));
+
+        if ($raw === '' || $raw === '/' || in_array(strtolower($raw), ['beranda', 'home', '/beranda', '/home'], true)) {
+            return '/';
+        }
+
+        // Bersihkan jika sempat tersimpan dengan prefix /halaman/ diikuti domain
+        $raw = preg_replace('#^/?halaman/(https?://|donasi\.dqws\.org|www\.donasi\.dqws\.org)#i', '$1', $raw) ?? $raw;
+
+        $host = request()->getHost() ?: 'donasi.dqws.org';
+        $hostPattern = '#^(?:https?://)?(?:www\.)?(?:' . preg_quote($host, '#') . '|donasi\.dqws\.org|localhost(?::\d+)?|127\.0\.0\.1(?::\d+)?)(/.*)?$#i';
+
+        if (preg_match($hostPattern, $raw, $matches)) {
+            $path = $matches[1] ?? '/';
+            return ($path === '' || $path === '/') ? '/' : $path;
+        }
+
+        if (in_array($cleanLabel, ['beranda', 'home', 'halaman utama'], true) && ! str_starts_with($raw, '/')) {
+            return '/';
+        }
+
+        if (str_starts_with($raw, '#')) {
+            return '/' . $raw;
+        }
+
+        if (preg_match('#^(https?://|mailto:|tel:|wa\.me/)#i', $raw)) {
+            return str_starts_with(strtolower($raw), 'wa.me/') ? 'https://' . $raw : $raw;
+        }
+
+        return '/' . ltrim($raw, '/');
+    }
 }

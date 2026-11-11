@@ -91,7 +91,10 @@
             <div class="hidden md:flex items-center gap-3">
                 @if($homeSetting && !empty($homeSetting->navbar_menu))
                     @foreach($homeSetting->navbar_menu as $menu)
-                        <a href="{{ $menu['url'] }}" class="px-4 py-2 rounded-xl text-slate-700 hover:text-brand-primary hover:bg-slate-100/80 font-semibold transition text-sm">
+                        @php
+                            $navUrl = \App\Models\HomepageSetting::normalizeNavUrl($menu['url'] ?? '/', $menu['label'] ?? null);
+                        @endphp
+                        <a href="{{ $navUrl }}" class="px-4 py-2 rounded-xl text-slate-700 hover:text-brand-primary hover:bg-slate-100/80 font-semibold transition text-sm">
                             {{ $menu['label'] }}
                         </a>
                     @endforeach
@@ -129,7 +132,10 @@
         <div x-show="open" style="display: none;" x-transition class="md:hidden bg-white border-t border-slate-100 shadow-xl px-4 py-4 space-y-2">
             @if($homeSetting && !empty($homeSetting->navbar_menu))
                 @foreach($homeSetting->navbar_menu as $menu)
-                    <a href="{{ $menu['url'] }}" class="block px-4 py-3 rounded-xl text-slate-700 hover:bg-slate-50 font-bold text-sm">{{ $menu['label'] }}</a>
+                    @php
+                        $navUrl = \App\Models\HomepageSetting::normalizeNavUrl($menu['url'] ?? '/', $menu['label'] ?? null);
+                    @endphp
+                    <a href="{{ $navUrl }}" class="block px-4 py-3 rounded-xl text-slate-700 hover:bg-slate-50 font-bold text-sm">{{ $menu['label'] }}</a>
                 @endforeach
             @else
                 <a href="/" class="block px-4 py-3 rounded-xl text-slate-700 hover:bg-slate-50 font-bold text-sm">Beranda</a>
@@ -336,7 +342,7 @@
                             $customPages = \App\Models\WebPage::where('is_active', true)->take(4)->get();
                         @endphp
                         @foreach($customPages as $customPage)
-                            <li><a href="/halaman/{{ $customPage->slug }}" class="hover:text-brand-primary transition">{{ $customPage->title }}</a></li>
+                            <li><a href="/{{ ltrim($customPage->slug, '/') }}" class="hover:text-brand-primary transition">{{ $customPage->title }}</a></li>
                         @endforeach
                     </ul>
                 </div>
