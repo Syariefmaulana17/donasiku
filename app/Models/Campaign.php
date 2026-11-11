@@ -24,6 +24,7 @@ class Campaign extends Model
         'slug', 
         'description', 
         'target_amount',
+        'current_amount',
         'status',
         'rejection_reason',
         'user_id',

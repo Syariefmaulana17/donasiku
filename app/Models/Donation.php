@@ -33,24 +33,29 @@ class Donation extends Model
     }
 
     // --- AKUNTAN OTOMATIS MULAI BEKERJA DI SINI ---
-    protected static function booted()
+    protected static function booted(): void
     {
-        // 'saved' berarti: Setiap kali data donasi baru dibuat ATAU diedit/disimpan
-        static::saved(function ($donation) {
-            
-            // 1. Hitung total semua uang yang statusnya 'success' pada program ini
-            $totalTerkumpul = self::where('campaign_id', $donation->campaign_id)
-                                  ->where('status', 'success')
-                                  ->sum('amount');
-            
-            // 2. Panggil Manajer Papan Pengumuman (Campaign)
-            $campaign = $donation->campaign;
-            
-            // 3. Update angkanya agar otomatis bertambah di etalase depan!
-            if ($campaign) {
-                $campaign->current_amount = $totalTerkumpul;
-                $campaign->save();
+        $recalculateCampaignTotal = function (self $donation): void {
+            $campaignIds = array_unique(array_filter([
+                $donation->campaign_id,
+                $donation->getOriginal('campaign_id'),
+            ]));
+
+            foreach ($campaignIds as $campaignId) {
+                $totalTerkumpul = self::where('campaign_id', $campaignId)
+                    ->where('status', 'success')
+                    ->sum('amount');
+
+                Campaign::where('id', $campaignId)->update([
+                    'current_amount' => $totalTerkumpul,
+                ]);
             }
-        });
+        };
+
+        // Setiap kali data donasi baru dibuat ATAU diedit/disimpan
+        static::saved($recalculateCampaignTotal);
+
+        // Setiap kali data donasi dihapus
+        static::deleted($recalculateCampaignTotal);
     }
 }

@@ -96,7 +96,11 @@
         >
             @forelse($campaigns as $campaign)
                 @php
-                    $percent = $campaign->target_amount > 0 ? min(100, round(($campaign->current_amount / $campaign->target_amount) * 100)) : 0;
+                    $collectedAmount = (float) ($campaign->donations_sum_amount ?? $campaign->current_amount ?? 0);
+                    $targetAmount = (float) ($campaign->target_amount ?? 0);
+                    $remainingAmount = max(0, $targetAmount - $collectedAmount);
+                    $percent = $targetAmount > 0 ? min(100, round(($collectedAmount / $targetAmount) * 100)) : 0;
+                    $displayType = $campaign->progress_display_type ?? 'terkumpul';
                     $daysLeft = null;
                     if ($campaign->end_date) {
                         $diff = now()->startOfDay()->diffInDays($campaign->end_date->startOfDay(), false);
@@ -184,10 +188,17 @@
 
                             <div class="flex justify-between items-end">
                                 <div>
-                                    <span class="text-[11px] text-slate-400 font-medium block">Terkumpul</span>
-                                    <span class="text-sm md:text-base font-extrabold text-brand-primary">
-                                        Rp {{ number_format($campaign->current_amount ?? 0, 0, ',', '.') }}
-                                    </span>
+                                    @if($displayType === 'sisa')
+                                        <span class="text-[11px] text-slate-400 font-medium block">Kebutuhan Lagi</span>
+                                        <span class="text-sm md:text-base font-extrabold text-rose-600">
+                                            Rp {{ number_format($remainingAmount, 0, ',', '.') }}
+                                        </span>
+                                    @else
+                                        <span class="text-[11px] text-slate-400 font-medium block">Terkumpul</span>
+                                        <span class="text-sm md:text-base font-extrabold text-brand-primary">
+                                            Rp {{ number_format($collectedAmount, 0, ',', '.') }}
+                                        </span>
+                                    @endif
                                 </div>
                                 <div class="text-right">
                                     <span class="text-[11px] text-slate-400 font-medium block">Donatur</span>

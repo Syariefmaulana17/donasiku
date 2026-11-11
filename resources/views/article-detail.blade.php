@@ -94,7 +94,7 @@
                                 </div>
                                 <div class="min-w-0 flex-1">
                                     <h4 class="font-bold text-slate-800 text-xs line-clamp-2 group-hover:text-brand-primary transition">{{ $camp->title }}</h4>
-                                    <p class="text-xs font-extrabold text-brand-primary mt-1">Rp {{ number_format($camp->current_amount ?? 0, 0, ',', '.') }}</p>
+                                    <p class="text-xs font-extrabold text-brand-primary mt-1">Rp {{ number_format($camp->donations_sum_amount ?? $camp->current_amount ?? 0, 0, ',', '.') }}</p>
                                 </div>
                             </a>
                         @endforeach

@@ -59,7 +59,7 @@
                 </div>
                 <div class="flex-grow">
                     <h4 class="font-bold text-gray-800 text-[13px] line-clamp-2 leading-tight">{{ $other->title }}</h4>
-                    <p class="text-[11px] text-gray-500 mt-1">Terkumpul: Rp {{ number_format($other->current_amount ?? 0, 0, ',', '.') }}</p>
+                    <p class="text-[11px] text-gray-500 mt-1">Terkumpul: Rp {{ number_format($other->donations_sum_amount ?? $other->current_amount ?? 0, 0, ',', '.') }}</p>
                     <a href="/campaign/{{ $other->slug }}/checkout" class="mt-2 inline-block text-[11px] bg-blue-50 text-blue-600 font-bold px-3 py-1.5 rounded-lg hover:bg-blue-100 transition">Donasi Lagi</a>
                 </div>
             </div>

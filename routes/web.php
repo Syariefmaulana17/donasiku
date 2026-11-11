@@ -30,6 +30,7 @@ Route::get('/payment/success/{id}', function($id) {
     
     // Ambil 3 program lain secara acak untuk upselling
     $otherCampaigns = \App\Models\Campaign::where('id', '!=', $donation->campaign_id)
+                        ->withSum(['donations' => fn ($q) => $q->where('status', 'success')], 'amount')
                         ->where('status', 'active')
                         ->inRandomOrder()
                         ->take(3)
@@ -53,6 +54,7 @@ Route::get('/artikel/{slug}', function ($slug) {
         ->get();
 
     $recommendedCampaigns = \App\Models\Campaign::where('status', 'active')
+        ->withSum(['donations' => fn ($q) => $q->where('status', 'success')], 'amount')
         ->inRandomOrder()
         ->take(3)
         ->get();

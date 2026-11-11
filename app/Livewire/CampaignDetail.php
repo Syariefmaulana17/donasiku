@@ -17,9 +17,13 @@ class CampaignDetail extends Component
             'updates' => fn ($q) => $q->latest(),
             'donations' => fn ($q) => $q->where('status', 'success')->latest(),
             'withdrawals' => fn ($q) => $q->where('status', 'completed')->latest(),
-        ])->where('slug', $slug)->firstOrFail();
+        ])
+            ->withSum(['donations' => fn ($q) => $q->where('status', 'success')], 'amount')
+            ->where('slug', $slug)
+            ->firstOrFail();
 
         $this->otherCampaigns = Campaign::where('id', '!=', $this->campaign->id)
+            ->withSum(['donations' => fn ($q) => $q->where('status', 'success')], 'amount')
             ->where('status', 'active')
             ->inRandomOrder()
             ->take(3)

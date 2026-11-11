@@ -3,7 +3,7 @@
     $siteName = $homeSetting->site_name ?? 'DonasiKu';
     $navbarColor = $homeSetting->navbar_color ?? '#ffffff';
 
-    $currentAmount = (float) ($campaign->current_amount ?? 0);
+    $currentAmount = (float) ($campaign->donations_sum_amount ?? $campaign->current_amount ?? 0);
     $targetAmount = (float) ($campaign->target_amount ?? 0);
     $remainingAmount = max(0, $targetAmount - $currentAmount);
     $percent = $targetAmount > 0 ? min(100, round(($currentAmount / $targetAmount) * 100)) : 0;

@@ -36,6 +36,7 @@ class CampaignSearch extends Component
     {
         $query = Campaign::with('user')
             ->withCount(['donations' => fn ($q) => $q->where('status', 'success')])
+            ->withSum(['donations' => fn ($q) => $q->where('status', 'success')], 'amount')
             ->where('status', 'active');
 
         if ($this->selectedCategory && $this->selectedCategory !== 'semua') {

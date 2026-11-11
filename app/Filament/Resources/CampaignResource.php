@@ -161,8 +161,9 @@ class CampaignResource extends Resource
                     ->withCount(['donations' => fn($query) => $query->where('status', 'success')])
             )
             ->columns([
-                Tables\Columns\ImageColumn::make('cover')
+                Tables\Columns\ImageColumn::make('cover_image')
                     ->label('Cover')
+                    ->disk('public')
                     ->square()
                     ->toggleable(),
 
@@ -201,7 +202,7 @@ class CampaignResource extends Resource
                     ->sortable()
                     ->toggleable(),
 
-                Tables\Columns\TextColumn::make('target')
+                Tables\Columns\TextColumn::make('target_amount')
                     ->label('Target (Rp)')
                     ->formatStateUsing(fn ($state) => 'Rp ' . number_format((float)$state, 0, ',', '.'))
                     ->sortable()
